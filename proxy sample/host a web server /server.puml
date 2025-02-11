@@ -1,0 +1,75 @@
+@startuml
+skinparam linetype ortho
+skinparam shadowing false
+
+!define CLOUD_COLOR lightblue
+!define COMPONENT_COLOR lightgreen
+!define OPTIONAL_COLOR lightgray
+
+cloud "AWS" as AWS #CLOUD_COLOR {
+  rectangle "VPC\n(Virtual Private Cloud)" as VPC {
+    rectangle "Public Subnets" as PublicSubnets
+  }
+
+  package "ECS/Fargate\n(Elastic Container Service)" as ECS #COMPONENT_COLOR {
+    component "ECS Cluster" as ECSCluster
+    component "ECS Task Definition\n(Docker Image)" as ECSTaskDefinition
+    component "ECS Service" as ECSService
+  }
+
+  node "EC2 Instance" as EC2 #COMPONENT_COLOR
+
+  package "Load Balancer\n(Application Load Balancer - ALB)" as ALB #OPTIONAL_COLOR {
+    component "Load Balancer" as LoadBalancer
+    component "Target Group" as TargetGroup
+    component "Listener" as Listener
+  }
+
+  database "ECR\n(Elastic Container Registry)" as ECR #COMPONENT_COLOR
+
+}
+
+cloud "Cloudflare" as Cloudflare #CLOUD_COLOR {
+  node "DNS" as DNS
+}
+
+rectangle "Client" as Client
+
+' === Connections ===
+
+Client -- DNS : Request: gateway.mydomain.com
+
+DNS -- LoadBalancer : Points To
+DNS -- EC2 : Points To
+
+LoadBalancer -- TargetGroup : Routes Traffic (Optional)
+TargetGroup -- ECSService : Forwards Traffic (Optional)
+
+ECSService -- ECSCluster : Manages Containers
+ECSCluster -- ECSTaskDefinition : Runs Tasks
+ECSTaskDefinition -- ECR : Pulls Docker Image
+
+EC2 -- ECR : Pulls Docker Image
+
+PublicSubnets -- LoadBalancer : Contains
+PublicSubnets -- ECS : Contains
+PublicSubnets -- EC2 : Contains
+
+' === Annotations ===
+
+note top of LoadBalancer
+  Optional: Highly Recommended for
+  Scalability and Availability
+end note
+
+note top of EC2
+  Optional: Simplest, but less scalable.
+  Alternative to ECS/Fargate.
+end note
+
+note top of DNS
+  Points to either ALB or EC2 instance
+end note
+
+center footer Diagram showing optional AWS infrastructure components using Terraform and Docker with Cloudflare DNS
+@enduml

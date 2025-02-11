@@ -1,0 +1,62 @@
+@startuml
+skinparam linetype ortho
+skinparam shadowing false
+
+' === Colors ===
+' You can adjust these to your preference
+!define CLOUD_COLOR lightblue
+!define NODE_COLOR lightgreen
+!define DB_COLOR lightyellow
+
+' === Cloud: Client ===
+cloud Client {
+  component "Application" as App #AliceBlue
+}
+
+' === Cloud: Cloudflare ===
+cloud Cloudflare #CLOUD_COLOR {
+  node "DNS Server" as CloudflareDNS #NODE_COLOR
+}
+
+' === Cloud: AWS ===
+cloud AWS #CLOUD_COLOR {
+  node "CloudFront" as CloudFront #NODE_COLOR
+  node "API Gateway" as APIGateway #NODE_COLOR
+}
+
+' === Database: Gemini API ===
+database "Gemini API\n(generativelanguage.googleapis.com)" as Gemini #DB_COLOR
+
+' === Connections ===
+App -- CloudflareDNS : 1. Request: gateway.mydomain.com
+CloudflareDNS -- CloudFront : 2. DNS Resolution
+CloudFront -- APIGateway : 3. Forward Request
+APIGateway -- Gemini : 4. Proxy Request
+Gemini -- APIGateway : 5. Gemini Response
+APIGateway -- CloudFront : 6. Forward Response
+CloudFront -- CloudflareDNS : 7. CDN Cache & Response
+CloudflareDNS -- App : 8. Response to Application
+
+' === Annotations ===
+note left of CloudflareDNS
+  gateway.mydomain.com
+  CNAME to CloudFront
+end note
+
+note right of CloudFront
+  Origin Request Policy
+  Forward Headers
+  (Authorization, etc.)
+end note
+
+note right of APIGateway
+  Integration Request
+  Map to Gemini API
+  (https://generativelanguage.googleapis.com)
+end note
+
+note left of Gemini
+  Gemini API
+  (Authentication Required)
+end note
+@enduml
