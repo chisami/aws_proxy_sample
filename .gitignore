@@ -10,16 +10,24 @@ override.tf.json
 *.tfplan
 terraform.tfstate.d/
 
+# Terragrunt ignores
+.terragrunt-cache/         # Cache directory for downloaded modules
+*.tgz                      # Compressed package files created by Terragrunt
+terragrunt.hcl             # Main configuration file (may contain sensitive info)
+
 # Git ignores
-.DS_Store
-*.log
-*.tmp
-*.o
-*.pyc
+.DS_Store                  # macOS system files
+*.log                      # Log files
+*.tmp                      # Temporary files
+*.o                        # Compiled object files
+*.pyc                      # Compiled Python files
 
 # Ansible ignores
-*.vault
-ansible.cfg
-inventory/
-roles/**/files/.gitkeep
-roles/**/templates/.gitkeep
+*.vault                    # Ansible Vault files (may contain sensitive data)
+ansible.cfg                # Local configuration file
+inventory/                 # Inventory files (if sensitive)
+roles/**/files/.gitkeep    # Role-specific temporary files
+roles/**/templates/.gitkeep # Role-specific temporary files
+
+# Lock file handling for Terraform/Terragrunt
+.terraform.lock.hcl        # Lock file for provider versions (should be committed)
