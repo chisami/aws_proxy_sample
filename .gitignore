@@ -1,0 +1,25 @@
+# Terraform ignores
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+override.tf
+override.tf.json
+*.tfplan
+terraform.tfstate.d/
+
+# Git ignores
+.DS_Store
+*.log
+*.tmp
+*.o
+*.pyc
+
+# Ansible ignores
+*.vault
+ansible.cfg
+inventory/
+roles/**/files/.gitkeep
+roles/**/templates/.gitkeep

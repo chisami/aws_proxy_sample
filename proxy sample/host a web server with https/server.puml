@@ -1,0 +1,55 @@
+@startuml
+skinparam linetype ortho
+skinparam shadowing false
+
+!define CLOUD_COLOR lightblue
+!define RESOURCE_COLOR lightgreen
+!define DATA_COLOR lightyellow
+
+cloud "Cloudflare" as Cloudflare #CLOUD_COLOR {
+  node "DNS" as CloudflareDNS
+  rectangle "SSL/TLS Settings\n(HTTPS)" as CloudflareSSL #RESOURCE_COLOR
+  rectangle "Zone Settings" as CloudflareZone #RESOURCE_COLOR
+}
+
+cloud "AWS" as AWS #CLOUD_COLOR {
+  rectangle "VPC\n(Virtual Private Cloud)" as VPC {
+    rectangle "Public Subnet" as PublicSubnet
+  }
+  component "EC2 Instance\n(Web Server)" as EC2 #RESOURCE_COLOR
+  rectangle "Security Group\n(HTTP/HTTPS)" as SecurityGroup #RESOURCE_COLOR
+  node "Internet Gateway" as InternetGateway #RESOURCE_COLOR
+  rectangle "Route Table" as RouteTable #RESOURCE_COLOR
+  rectangle "user_data\n(Docker Installation\nand Nginx Run)" as UserData #RESOURCE_COLOR
+}
+
+database "Docker Hub\n(Nginx Image)" as DockerHub #DATA_COLOR
+
+' === Connections ===
+
+Client -- CloudflareDNS : 1. DNS Resolution
+CloudflareDNS -- AWS : 2. Points to EC2 Public IP
+
+CloudflareSSL -- CloudflareDNS : Enforces HTTPS
+CloudflareZone -- CloudflareDNS : Manages Zone Settings
+
+EC2 -- DockerHub : Pulls Nginx Image
+EC2 -- PublicSubnet : Located In
+EC2 -- SecurityGroup : Associated With
+
+PublicSubnet -- InternetGateway : Route to Internet
+PublicSubnet -- RouteTable : uses
+RouteTable -- InternetGateway : Routes Traffic
+
+SecurityGroup -- EC2 : Controls Traffic
+
+VPC -- PublicSubnet : Contains
+
+' === Annotations ===
+note top of CloudflareDNS : Manages DNS Records\n(A Record for EC2)
+note top of CloudflareSSL : Enforces\nAlways Use HTTPS\nSSL = Strict
+note top of EC2 : Runs Web Server\n(Nginx in Docker)
+note top of SecurityGroup : Allows\nHTTP (Port 80)\nHTTPS (Port 443)
+note right of UserData : Performs actions during EC2 launch\nInstall docker, Run Nginx, etc
+center footer Diagram of AWS/Cloudflare infrastructure for hosting Nginx Web Server
+@enduml

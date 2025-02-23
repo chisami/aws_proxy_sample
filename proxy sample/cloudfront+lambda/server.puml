@@ -1,0 +1,45 @@
+@startuml
+!pragma teoz true
+' Styling
+skinparam componentStyle uml2
+skinparam cloud {
+  BorderColor black
+  BackgroundColor #eee
+}
+skinparam database {
+  BorderColor black
+  BackgroundColor #eee
+}
+
+' Components
+cloud "User" as User
+cloud "Cloudflare" as Cloudflare {
+  component "DNS" as CloudflareDNS
+  component "CDN & Security" as CloudflareCDN
+}
+cloud "AWS" as AWS {
+  component "CloudFront Distribution" as CloudFront
+  component "Lambda Function" as Lambda
+  database "Backend API(s)" as BackendAPI
+}
+
+' Relationships
+User -- CloudflareDNS : DNS Query
+CloudflareDNS -- CloudflareCDN : Returns DNS Record
+CloudflareCDN -- CloudFront : Request (HTTPS)
+CloudFront -- Lambda : Forwarded Request
+Lambda -- BackendAPI : Proxy Request (HTTPS)
+BackendAPI -- Lambda : Response
+Lambda -- CloudFront : Response
+CloudFront -- CloudflareCDN : Response
+CloudflareCDN -- User : Response
+
+' Notes
+note top of CloudflareDNS : CNAME Record points to CloudFront
+note right of CloudFront : Caches content\nViewer Request Function triggered
+note right of Lambda : Reverse Proxy logic
+note bottom of BackendAPI : e.g., OpenAI, Gemini APIs
+
+' Alternative Flows (optional for brevity)
+
+@enduml
