@@ -19,16 +19,16 @@ variable "subnets" {
   }))
   default = [
     {
-      subnet_name                = "private_subnet1"
+      subnet_name                = "private_subnet"
       cidr_block                 = "10.0.1.0/24"
       prohibit_public_ip_on_vnic = true
-      dns_label                  = "privatesubnet1"
+      dns_label                  = "privatesubnet"
     },
     {
-      subnet_name                = "private_subnet2"
+      subnet_name                = "public_subnet"
       cidr_block                 = "10.0.2.0/24"
-      prohibit_public_ip_on_vnic = true
-      dns_label                  = "privatesubnet2"
+      prohibit_public_ip_on_vnic = false
+      dns_label                  = "publicsubnet"
     }
   ]
 }
@@ -74,11 +74,11 @@ variable "vcn_cidrs" {
 }
 
 variable "vcn_dns_label" {
-  default = "myvcn"
+  default = "mainvcn"
 }
 
 variable "vcn_name" {
-  default = "MyVCN"
+  default = "MainVCN"
 }
 
 variable "internet_gateway_display_name" {
@@ -104,4 +104,9 @@ variable "internet_gateway_route_rules" {
     destination_type  = string
   }))
   default = []
+}
+
+variable "security_list_display_name" {
+  description = "Display name for the security list."
+  default     = "security-list-for-subnet"
 }
